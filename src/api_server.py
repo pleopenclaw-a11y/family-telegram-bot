@@ -29,6 +29,7 @@ Run::
 from __future__ import annotations
 
 import json
+import os
 import sys
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -210,9 +211,13 @@ def build_server(
     return server
 
 
+def listen_config() -> tuple[str, int]:
+    return os.getenv("FAMILY_BOARD_HOST", "0.0.0.0"), int(os.getenv("PORT", "8787"))
+
+
 def main() -> None:
     settings = load_settings()
-    server = build_server()
+    server = build_server(*listen_config())
     host, port = server.server_address[:2]
     print(f"Family Board API listening on http://{host}:{port}")
     # The 9arm key stays server-side; nothing is printed here.

@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import sqlite3
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent.parent / "family_memory.sqlite3"
+def database_path() -> Path:
+    return Path(os.getenv("FAMILY_BOARD_DB_PATH", Path(__file__).resolve().parent.parent / "family_memory.sqlite3"))
+
+
+DB_PATH = database_path()
 
 
 def connect() -> sqlite3.Connection:

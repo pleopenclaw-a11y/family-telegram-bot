@@ -24,10 +24,24 @@ Local Family Board MVP is implemented and verified:
 - SQLite is the local persistence adapter; production Firestore migration is intentionally separate.
 - `pytest -q` is the required verification command.
 
-The public deployment is the static PWA only. The Python API must run on a trusted server or
-authenticated private network; it is not deployed as a public unauthenticated endpoint. Production
-backend deployment remains blocked because no authorized host or authenticated proxy is configured;
-set `FAMILY_BOARD_API_TOKEN` and `FAMILY_BOARD_ALLOWED_ORIGIN` before exposing the API.
+## Render deployment
+
+Render is the selected target because its paid web service supports a persistent disk, which keeps
+the existing SQLite database at `/var/data/family_memory.sqlite3` across deploys. `Dockerfile` and
+`render.yaml` are ready for a Render Blueprint. The service listens on Render's `PORT` and exposes
+`GET /api/healthz` for health checks.
+
+Required Render setup:
+
+1. Create a Blueprint from this repository and select the `family-board-api` service.
+2. Set secret `NINEARM_API_KEY` and a long random `FAMILY_BOARD_API_TOKEN` in the Render dashboard.
+3. Set `FAMILY_BOARD_ALLOWED_ORIGIN` to the exact HTTPS origin of the hosted `web/` PWA.
+4. Verify `https://<render-service>.onrender.com/api/healthz` returns `{"status":"ok"}`.
+
+The current browser adapter does not send `FAMILY_BOARD_API_TOKEN`; do not put that secret in the
+PWA, a query string, or committed JavaScript. Therefore the API must remain behind an authenticated
+frontend/proxy before enabling live browser mode. The package deploys the safe backend foundation,
+but a public live UI still requires that auth choice.
 
 ## Run locally
 

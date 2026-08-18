@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import tempfile
 import threading
@@ -187,3 +188,13 @@ class SocketIntegrationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DeploymentConfigTests(unittest.TestCase):
+    def test_listen_config_uses_render_port_and_public_bind(self):
+        with patch.dict(os.environ, {"PORT": "4567"}, clear=False):
+            self.assertEqual(api_server.listen_config(), ("0.0.0.0", 4567))
+
+    def test_database_path_can_be_set_for_persistent_disk(self):
+        with patch.dict(os.environ, {"FAMILY_BOARD_DB_PATH": "/var/data/family.sqlite3"}, clear=False):
+            self.assertEqual(store.database_path(), Path("/var/data/family.sqlite3"))
