@@ -33,9 +33,9 @@ def _json_from_response(result: dict[str, Any]) -> dict[str, Any]:
 def extract_message(client: NineArmClient, text: str) -> Extraction:
     prompt = """You classify a family Telegram message for shared memory.
 Return JSON only, with exactly these keys:
-{"action":"save|ignore|confirm", "kind":"event|expense|task|note", "normalized_text":"...", "confidence":0.0, "question":"..."}
+{"action":"save|ignore|confirm", "kind":"event|expense|task|note|shopping", "normalized_text":"...", "confidence":0.0, "question":"..."}
 Rules:
-- save only useful family information: appointments, dates, places, expenses, tasks, reminders, or durable notes.
+- save only useful family information: appointments, dates, places, expenses, tasks, shopping lists, reminders, or durable notes.
 - ignore greetings, jokes, casual conversation, and empty messages.
 - confirm when useful but missing an important date, amount, person, or meaning.
 - normalized_text must be concise Thai, preserve facts, numbers, dates, and times.
@@ -50,6 +50,6 @@ Message: """ + text
     if action not in {"save", "ignore", "confirm"}:
         action = "confirm"
     kind = data.get("kind", "note")
-    if kind not in {"event", "expense", "task", "note"}:
+    if kind not in {"event", "expense", "task", "note", "shopping"}:
         kind = "note"
     return Extraction(action, kind, str(data.get("normalized_text", text)), float(data.get("confidence", 0)), str(data.get("question", "")))

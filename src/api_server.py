@@ -125,7 +125,7 @@ class ApiHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         origin = self.headers.get("Origin")
         allowed_origin = getattr(self.server, "allowed_origin", "")  # type: ignore[attr-defined]
-        if origin and (not allowed_origin or origin == allowed_origin):
+        if origin and allowed_origin and origin == allowed_origin:
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")

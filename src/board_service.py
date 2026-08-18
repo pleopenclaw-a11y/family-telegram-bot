@@ -27,7 +27,7 @@ import family_memory as store
 from extractor import Extraction, extract_message
 from ninearm_client import NineArmClient
 
-ALLOWED_KINDS = {"event", "expense", "task", "note"}
+ALLOWED_KINDS = {"event", "expense", "task", "note", "shopping"}
 
 
 @dataclass(frozen=True)
@@ -129,7 +129,7 @@ def get_board(
       - ``group``: the requested group id
       - ``generated_at``: ISO timestamp of the snapshot
       - ``recent``: most recent memories (newest first)
-      - ``by_kind``: per-kind lists (event, expense, task, note)
+      - ``by_kind``: per-kind lists (event, expense, task, note, shopping)
     """
     today = today or datetime.now(timezone.utc)
     rows = store.list_memories(group_id, limit=recent_limit)

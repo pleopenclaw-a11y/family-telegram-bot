@@ -19,11 +19,15 @@ Local Family Board MVP is implemented and verified:
 - `web/` contains the Thai-first PWA dashboard.
 - `src/api_server.py` provides the server-side board and capture API.
 - `src/board_service.py` is the shared write/read domain boundary.
+- Telegram capture uses preview → explicit ใช่/ไม่ confirmation before writing;
+  shopping captures are stored with `kind=shopping`.
 - SQLite is the local persistence adapter; production Firestore migration is intentionally separate.
 - `pytest -q` is the required verification command.
 
 The public deployment is the static PWA only. The Python API must run on a trusted server or
-authenticated private network; it is not deployed as a public unauthenticated endpoint.
+authenticated private network; it is not deployed as a public unauthenticated endpoint. Production
+backend deployment remains blocked because no authorized host or authenticated proxy is configured;
+set `FAMILY_BOARD_API_TOKEN` and `FAMILY_BOARD_ALLOWED_ORIGIN` before exposing the API.
 
 ## Run locally
 

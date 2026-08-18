@@ -172,6 +172,18 @@ class SocketIntegrationTests(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         resp.read()
 
+    def test_cors_requires_explicit_allowed_origin(self):
+        self.conn.request("GET", "/api/healthz", headers={"Origin": "https://unexpected.example"})
+        resp = self.conn.getresponse()
+        self.assertIsNone(resp.getheader("Access-Control-Allow-Origin"))
+        resp.read()
+
+        self.server.allowed_origin = "https://family.example"
+        self.conn.request("GET", "/api/healthz", headers={"Origin": "https://family.example"})
+        resp = self.conn.getresponse()
+        self.assertEqual(resp.getheader("Access-Control-Allow-Origin"), "https://family.example")
+        resp.read()
+
 
 if __name__ == "__main__":
     unittest.main()

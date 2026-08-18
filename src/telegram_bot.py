@@ -5,6 +5,7 @@ import html
 import logging
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 from telegram import BotCommand, Update
@@ -13,12 +14,9 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from config import load_settings
-from extractor import extract_message
 from family_memory import delete_memory, find_delete_candidates, list_memories, search_memories, utc_days_ago
-from board_service import commit_capture
+from board_service import PreviewResult, commit_capture, preview_capture
 from ninearm_client import NineArmClient
-
-SYSTEM_PROMPT = (Path(__file__).resolve().parent.parent / "prompts" / "family_system.md").read_text(encoding="utf-8")
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 settings = load_settings()
@@ -30,6 +28,17 @@ COMMANDS = [
     BotCommand("expenses", "ดูค่าใช้จ่าย"), BotCommand("search", "ค้นหาข้อมูล"),
     BotCommand("delete", "ลบรายการที่บันทึก"),
 ]
+PENDING_CAPTURE_KEY = "pending_capture"
+YES_WORDS = {"yes", "y", "ใช่", "ตกลง", "บันทึก"}
+NO_WORDS = {"no", "n", "ไม่", "ยกเลิก", "cancel"}
+
+
+@dataclass(frozen=True)
+class PendingCapture:
+    preview: PreviewResult
+    user_id: str | None
+    user_name: str | None
+    source_message_id: int | None
 
 
 def code_block(text: str) -> str:
@@ -124,12 +133,46 @@ def delete_term(text: str) -> str | None:
     return match.group(1).strip() if match else None
 
 
+def confirmation_answer(text: str) -> str | None:
+    answer = text.strip().casefold()
+    if answer in YES_WORDS:
+        return "yes"
+    if answer in NO_WORDS:
+        return "no"
+    return None
+
+
+async def handle_pending_capture(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
+    pending = context.chat_data.get(PENDING_CAPTURE_KEY)
+    if not pending:
+        return False
+    message = update.message
+    answer = confirmation_answer(message.text)
+    if answer == "yes":
+        context.chat_data.pop(PENDING_CAPTURE_KEY, None)
+        preview = pending.preview
+        commit_capture(
+            group_id(update), kind=preview.kind, normalized_text=preview.normalized_text,
+            user_id=pending.user_id, user_name=pending.user_name,
+            source_message_id=pending.source_message_id,
+        )
+        await message.reply_text(code_block("บันทึกแล้วค่ะ"), parse_mode=ParseMode.HTML)
+    elif answer == "no":
+        context.chat_data.pop(PENDING_CAPTURE_KEY, None)
+        await message.reply_text(code_block("ยกเลิกการบันทึกแล้วค่ะ"), parse_mode=ParseMode.HTML)
+    else:
+        await message.reply_text(code_block("กรุณาตอบ ใช่ เพื่อบันทึก หรือ ไม่ เพื่อยกเลิกค่ะ"), parse_mode=ParseMode.HTML)
+    return True
+
+
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.message or not update.message.text:
         return
     message = update.message
     text = message.text.strip()
     await context.bot.send_chat_action(chat_id=message.chat_id, action="typing")
+    if await handle_pending_capture(update, context):
+        return
     if term := delete_term(text):
         rows = find_delete_candidates(group_id(update), term)
         if len(rows) == 1:
@@ -143,11 +186,9 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         else:
             await message.reply_text(code_block("ไม่พบรายการที่ตรงกับคำขอลบค่ะ"), parse_mode=ParseMode.HTML)
         return
-    user = message.from_user
-    name = user.full_name if user else None
     try:
         extraction = await asyncio.wait_for(
-            asyncio.to_thread(extract_message, client, text), timeout=95
+            asyncio.to_thread(preview_capture, client, text), timeout=95
         )
         if extraction.action == "ignore":
             return
@@ -155,22 +196,17 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             question = extraction.question or "ข้อความนี้มีข้อมูลที่ควรบันทึกใน Family Memory ใช่ไหมคะ?"
             await message.reply_text(code_block(question), parse_mode=ParseMode.HTML)
             return
-        result = await asyncio.wait_for(
-            asyncio.to_thread(client.chat, [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": text},
-            ]), timeout=95
-        )
-        answer = result["choices"][0]["message"]["content"]
-        commit_capture(
-            group_id(update),
-            normalized_text=extraction.normalized_text,
-            kind=extraction.kind,
+        user = message.from_user
+        context.chat_data[PENDING_CAPTURE_KEY] = PendingCapture(
+            preview=extraction,
             user_id=str(user.id) if user else None,
-            user_name=name,
+            user_name=user.full_name if user else None,
             source_message_id=message.message_id,
         )
-        await message.reply_text(code_block(answer[:3600]), parse_mode=ParseMode.HTML)
+        await message.reply_text(
+            code_block(f"บันทึกข้อความนี้ไหมคะ?\n\n{extraction.normalized_text}\n\nตอบ ใช่ หรือ ไม่ค่ะ"),
+            parse_mode=ParseMode.HTML,
+        )
     except Exception:
         logging.exception("message extraction or 9arm request failed")
         await message.reply_text(code_block("ยังไม่ได้บันทึกข้อความนี้ค่ะ เพราะ AI classifier ทำงานไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"), parse_mode=ParseMode.HTML)

@@ -73,7 +73,8 @@ Open:
 http://127.0.0.1:8080/?mode=live&api=http://127.0.0.1:8787&group=family
 ```
 
-The browser never receives `NINEARM_API_KEY`. The API enforces preview → confirmation → commit.
+The browser never receives `NINEARM_API_KEY`. The live UI follows preview → confirmation → commit;
+protect the API with `FAMILY_BOARD_API_TOKEN` and an authenticated private network before deployment.
 
 
 ## PWA notes

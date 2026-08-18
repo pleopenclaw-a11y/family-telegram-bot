@@ -96,6 +96,16 @@ class BoardServiceTests(unittest.TestCase):
         self.assertEqual(rows[0]["kind"], "expense")
         self.assertEqual(rows[0]["text"], "ค่าอาหารแมว 450 บาท")
 
+    def test_commit_preserves_shopping_kind(self):
+        commit = board_service.commit_capture(
+            "group-a", kind="shopping", normalized_text="นม 2 ลิตร",
+        )
+
+        self.assertEqual(commit.kind, "shopping")
+        board = board_service.get_board("group-a")
+        self.assertEqual(len(board["by_kind"]["shopping"]), 1)
+        self.assertEqual(board["by_kind"]["shopping"][0]["kind"], "shopping")
+
     def test_commit_is_group_scoped_and_kind_validated(self):
         one = board_service.commit_capture("group-a", kind="task", normalized_text="ซักผ้า")
         # Invalid kind falls back to note.
