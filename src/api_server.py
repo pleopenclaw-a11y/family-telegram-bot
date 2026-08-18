@@ -123,7 +123,11 @@ class ApiHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = self.headers.get("Origin")
+        allowed_origin = getattr(self.server, "allowed_origin", "")  # type: ignore[attr-defined]
+        if origin and (not allowed_origin or origin == allowed_origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
@@ -151,6 +155,9 @@ class ApiHandler(BaseHTTPRequestHandler):
 
     def _handle(self, method: str) -> None:
         try:
+            if method != "OPTIONS" and not self._authorized():
+                self._send_json(401, {"error": "Unauthorized"})
+                return
             body = self._read_body() if method == "POST" else {}
             payload = route(method, self.path, body, self._deps())
             self._send_json(200, payload)
@@ -158,6 +165,15 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._send_json(exc.status, {"error": exc.message})
         except Exception as exc:  # noqa: BLE001
             self._send_json(500, {"error": f"Internal server error: {type(exc).__name__}"})
+
+    def _authorized(self) -> bool:
+        if self.path.split("?", 1)[0].rstrip("/") == "/api/healthz":
+            return True
+        expected = getattr(self.server, "api_token", "")  # type: ignore[attr-defined]
+        if not expected:
+            return True
+        supplied = self.headers.get("Authorization", "")
+        return supplied == f"Bearer {expected}"
 
     def log_message(self, fmt: str, *args: Any) -> None:
         # Keep stdout clean; silence default request logging.
@@ -188,6 +204,9 @@ def build_server(
     dependencies = deps or build_default_dependencies()
     server = ThreadingHTTPServer((host, port), ApiHandler)
     server.deps = dependencies  # type: ignore[attr-defined]
+    settings = load_settings()
+    server.api_token = settings.family_board_api_token  # type: ignore[attr-defined]
+    server.allowed_origin = settings.family_board_allowed_origin  # type: ignore[attr-defined]
     return server
 
 

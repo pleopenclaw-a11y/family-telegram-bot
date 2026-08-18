@@ -160,6 +160,18 @@ class SocketIntegrationTests(unittest.TestCase):
         payload = json.loads(resp.read())
         self.assertIn("group", payload["error"])
 
+    def test_configured_api_token_protects_non_health_routes(self):
+        self.server.api_token = "test-token"
+        self.conn.request("GET", "/api/board?group=group-a")
+        resp = self.conn.getresponse()
+        self.assertEqual(resp.status, 401)
+        resp.read()
+
+        self.conn.request("GET", "/api/board?group=group-a", headers={"Authorization": "Bearer test-token"})
+        resp = self.conn.getresponse()
+        self.assertEqual(resp.status, 200)
+        resp.read()
+
 
 if __name__ == "__main__":
     unittest.main()

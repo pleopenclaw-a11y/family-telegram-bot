@@ -12,6 +12,8 @@ class Settings:
     primary_model: str
     fallback_model: str
     embedding_model: str
+    family_board_api_token: str
+    family_board_allowed_origin: str
 
 def load_settings() -> Settings:
     return Settings(
@@ -21,4 +23,6 @@ def load_settings() -> Settings:
         primary_model=os.getenv("NINEARM_PRIMARY_MODEL", "deepseek-v4-flash-0731"),
         fallback_model=os.getenv("NINEARM_FALLBACK_MODEL", "qwen3.8-27b-fp8"),
         embedding_model=os.getenv("NINEARM_EMBEDDING_MODEL", ""),
+        family_board_api_token=os.getenv("FAMILY_BOARD_API_TOKEN", ""),
+        family_board_allowed_origin=os.getenv("FAMILY_BOARD_ALLOWED_ORIGIN", ""),
     )

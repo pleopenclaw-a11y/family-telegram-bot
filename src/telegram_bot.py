@@ -155,6 +155,13 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             question = extraction.question or "ข้อความนี้มีข้อมูลที่ควรบันทึกใน Family Memory ใช่ไหมคะ?"
             await message.reply_text(code_block(question), parse_mode=ParseMode.HTML)
             return
+        result = await asyncio.wait_for(
+            asyncio.to_thread(client.chat, [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": text},
+            ]), timeout=95
+        )
+        answer = result["choices"][0]["message"]["content"]
         commit_capture(
             group_id(update),
             normalized_text=extraction.normalized_text,
@@ -163,13 +170,6 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             user_name=name,
             source_message_id=message.message_id,
         )
-        result = await asyncio.wait_for(
-            asyncio.to_thread(client.chat, [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": text},
-            ]), timeout=95
-        )
-        answer = result["choices"][0]["message"]["content"]
         await message.reply_text(code_block(answer[:3600]), parse_mode=ParseMode.HTML)
     except Exception:
         logging.exception("message extraction or 9arm request failed")
