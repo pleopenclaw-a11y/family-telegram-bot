@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/family-board.js": {
+      "maxDuration": 10
+    }
+  }
+}

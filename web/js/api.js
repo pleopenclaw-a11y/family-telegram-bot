@@ -7,7 +7,7 @@
  *
  * Three guarantees:
  *   1. The browser never contacts an AI endpoint and never holds an
- *      API key — all "AI" capture here is simulated locally.
+ *      API key — live requests use the same-origin proxy.
  *   2. Data is mock/offline. Display sections are seeded with fake
  *      samples so the UI is previewable; what you type into the
  *      capture box is stored ONLY in this browser's localStorage
@@ -186,7 +186,10 @@ class RealApiAdapter {
   }
 
   async getDashboard() {
-    const body = await this.request(`/api/board?group=${encodeURIComponent(this.groupId)}`);
+    const path = this.baseUrl
+      ? `/api/board?group=${encodeURIComponent(this.groupId)}`
+      : `/api/family-board?op=board&group=${encodeURIComponent(this.groupId)}`;
+    const body = await this.request(path);
     const byKind = body.by_kind || {};
     const toItem = (item) => ({ ...item, text: item.text || item.normalized_text });
     return {
@@ -201,7 +204,8 @@ class RealApiAdapter {
   }
 
   async capture(text) {
-    const body = await this.request('/api/capture/preview', {
+    const path = this.baseUrl ? '/api/capture/preview' : '/api/family-board?op=preview';
+    const body = await this.request(path, {
       method: 'POST',
       body: JSON.stringify({ group: this.groupId, text }),
     });
@@ -209,7 +213,8 @@ class RealApiAdapter {
   }
 
   async recordCapture(draft) {
-    return this.request('/api/capture/commit', {
+    const path = this.baseUrl ? '/api/capture/commit' : '/api/family-board?op=commit';
+    return this.request(path, {
       method: 'POST',
       body: JSON.stringify({ group: this.groupId, kind: draft.kind, normalized_text: draft.text }),
     });

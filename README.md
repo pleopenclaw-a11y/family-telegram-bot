@@ -38,10 +38,17 @@ Required Render setup:
 3. Set `FAMILY_BOARD_ALLOWED_ORIGIN` to the exact HTTPS origin of the hosted `web/` PWA.
 4. Verify `https://<render-service>.onrender.com/api/healthz` returns `{"status":"ok"}`.
 
-The current browser adapter does not send `FAMILY_BOARD_API_TOKEN`; do not put that secret in the
-PWA, a query string, or committed JavaScript. Therefore the API must remain behind an authenticated
-frontend/proxy before enabling live browser mode. The package deploys the safe backend foundation,
-but a public live UI still requires that auth choice.
+The Vercel proxy in `api/family-board.js` is the authenticated frontend: it only forwards health,
+board, preview, and commit operations and adds `FAMILY_BOARD_API_TOKEN` server-side. Set these
+Vercel environment variables: `RENDER_API_URL` and `FAMILY_BOARD_API_TOKEN`. The browser never
+receives the token.
+
+Vercel deployment:
+
+1. Import the repository into Vercel.
+2. Set `RENDER_API_URL` to the Render service URL and `FAMILY_BOARD_API_TOKEN` to the same token
+   configured on Render.
+3. Set Render's `FAMILY_BOARD_ALLOWED_ORIGIN` to the Vercel site's exact HTTPS origin.
 
 ## Run locally
 
@@ -59,5 +66,7 @@ cd /home/jornjud/projects/family-telegram-bot/web
 python3 -m http.server 8080
 ```
 
-Open mock mode at `http://127.0.0.1:8080/`, or live server mode at:
+Open mock mode at `http://127.0.0.1:8080/`, or local live server mode at:
 `http://127.0.0.1:8080/?mode=live&api=http://127.0.0.1:8787&group=family`.
+The explicit `api=` URL is required for local direct-server development; deployed live mode uses
+the same-origin Vercel proxy without an `api=` parameter.

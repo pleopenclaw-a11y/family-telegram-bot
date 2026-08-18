@@ -43,7 +43,8 @@ Then open <http://localhost:8080> (or on a phone on the same LAN, `http://<your-
 `js/api.js` is the **only** data boundary. It supports two modes:
 
 - Default mode uses `MockApiAdapter` and localStorage for a safe offline preview.
-- `?mode=live&api=https://<your-api-host>&group=family` uses `RealApiAdapter` and the server API.
+- `?mode=live&group=family` uses the same-origin `/api/family-board` proxy.
+- `?mode=live&api=https://<your-api-host>&group=family` explicitly uses a direct API URL for local development.
 
 - **Display sections** are seeded with fake sample data (already "live-looking" relative to today).
 - In mock mode, capture is simulated locally — no AI, no network. Confirmed items are stored only
@@ -74,9 +75,8 @@ http://127.0.0.1:8080/?mode=live&api=http://127.0.0.1:8787&group=family
 ```
 
 The browser never receives `NINEARM_API_KEY` or `FAMILY_BOARD_API_TOKEN`. The live UI follows
-preview → confirmation → commit. Because the current adapter has no login/session flow, keep
-`FAMILY_BOARD_API_TOKEN` server-side and put the API behind an authenticated frontend/proxy before
-making live mode public; never paste the token into this URL or into `web/`.
+preview → confirmation → commit. Deployed mode uses the Vercel proxy; direct local mode requires
+the explicit `api=` URL above. Never paste the token into this URL or into `web/`.
 
 
 ## PWA notes
