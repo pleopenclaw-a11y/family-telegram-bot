@@ -1,0 +1,23 @@
+{
+  "name": "Family Board — กระดานครอบครัว",
+  "short_name": "Family Board",
+  "description": "กระดานกลางสำหรับครอบครัว: วันนี้ อีเวนต์ งาน บันทึก รายการซื้อ และ AI capture",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f3ea",
+  "theme_color": "#2f6f5f",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

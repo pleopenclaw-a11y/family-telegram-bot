@@ -1,0 +1,195 @@
+/* ============================================================
+   Family Board — Thai-first, mobile/tablet-first dashboard
+   Dependency-free. Warm, family-friendly palette.
+   ============================================================ */
+
+:root {
+  --bg: #f7f3ea;
+  --card-bg: #ffffff;
+  --ink: #26312c;
+  --muted: #6b7a72;
+  --accent: #2f6f5f;
+  --accent-dark: #24564a;
+  --accent-soft: #e5efe9;
+  --ring: #dce6df;
+  --danger: #b4552f;
+  --shadow: 0 2px 8px rgba(38, 49, 44, 0.08);
+  --radius: 16px;
+  --gap: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans Thai", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------- Header ---------- */
+.board-header {
+  background: var(--accent);
+  color: #fff;
+  padding: 16px 16px 14px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+}
+.header-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.board-title { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.2px; }
+.board-subtitle { margin: 2px 0 0; font-size: 13px; opacity: 0.92; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+
+.icon-btn {
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.icon-btn:hover { background: rgba(255, 255, 255, 0.3); }
+.icon-btn.spinning { animation: spin 0.8s linear infinite; transform: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.data-badge {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+/* ---------- Main grid ---------- */
+.board-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px 14px calc(40px + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap);
+}
+
+/* Tablet: two columns for the lower reports */
+@media (min-width: 620px) {
+  .board-main {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: var(--gap);
+    column-gap: var(--gap);
+  }
+  .capture-card,
+  .today-card,
+  .card.notes-card { grid-column: 1 / -1; }
+  .board-main .card { grid-column: span 1; }
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+.capture-card { border: 1px solid var(--ring); }
+
+.card-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.plain-list li {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--ring);
+  font-size: 14px;
+}
+.plain-list li:last-child { border-bottom: none; }
+.empty-hint { color: var(--muted); font-size: 13px; font-style: italic; }
+
+/* Captured draft item style */
+.draft { color: var(--muted); }
+.draft .kind-tag {
+  display: inline-block;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 1px 7px;
+  margin-right: 8px;
+}
+
+/* ---------- Capture form ---------- */
+#captureInput {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--ring);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: #fbfaf6;
+}
+#captureInput:focus { outline: 2px solid var(--accent); }
+.capture-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.capture-row select {
+  flex: 1;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 10px;
+  border: 1px solid var(--ring);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+}
+.capture-row button {
+  flex: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 9px 22px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.capture-row button:hover { background: var(--accent-dark); }
+.capture-hint { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+
+/* ---------- Footer ---------- */
+.board-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 10px 16px 24px;
+}
+
+/* ---------- Misc ---------- */
+.muted { color: var(--muted); }
+.time { color: var(--muted); font-size: 12px; margin-left: 6px; white-space: nowrap; }

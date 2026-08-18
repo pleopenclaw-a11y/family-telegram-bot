@@ -1,0 +1,12 @@
+[project]
+name = "family-telegram-bot"
+version = "0.1.0"
+description = "Shared Telegram family memory assistant"
+requires-python = ">=3.12"
+dependencies = [
+  "httpx>=0.27,<1",
+  "python-dotenv>=1.0,<2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

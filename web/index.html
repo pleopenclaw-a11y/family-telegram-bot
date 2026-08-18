@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Family Board — กระดานครอบครัว</title>
+  <meta name="description" content="กระดานกลางสำหรับครอบครัว: วันนี้ อีเวนต์ งาน บันทึก รายการซื้อ และ AI capture" />
+  <meta name="theme-color" content="#2f6f5f" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="board-header">
+    <div class="header-inner">
+      <div>
+        <h1 class="board-title">Family Board</h1>
+        <p class="board-subtitle" id="todayLabel">—</p>
+      </div>
+      <div class="header-actions">
+        <button id="refreshBtn" class="icon-btn" title="รีเฟรช" aria-label="รีเฟรช">⟳</button>
+        <!-- Data source badge: mock/adapter shows where data lives -->
+        <span id="dataBadge" class="data-badge">mock</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="board-main">
+    <!-- AI Capture -->
+    <section class="card capture-card" aria-labelledby="captureTitle">
+      <h2 id="captureTitle" class="card-title">📥 ฝากสิ่งสำคัญให้ AI</h2>
+      <form id="captureForm" autocomplete="off">
+        <textarea
+          id="captureInput"
+          rows="2"
+          placeholder="พิมพ์ข้อความ เช่น “จองรถไปสนามบินวันศุกร์” หรือ “ซื้อสบู่ กระดาษทิชชู่”"></textarea>
+        <div class="capture-row">
+          <select id="captureKind" aria-label="ประเภท">
+            <option value="note">บันทึก</option>
+            <option value="event">อีเวนต์</option>
+            <option value="task">งาน</option>
+            <option value="shopping">ซื้อของ</option>
+          </select>
+          <button type="submit" id="captureBtn">ส่ง</button>
+        </div>
+      </form>
+      <p id="captureHint" class="capture-hint">
+        โหมดสาธิต: ข้อความถูกเก็บไว้เฉพาะในเครื่องเท่านั้น ไม่มีการส่งข้อมูลออกไป
+      </p>
+    </section>
+
+    <!-- Today summary -->
+    <section class="card today-card" aria-labelledby="todayTitle">
+      <h2 id="todayTitle" class="card-title">☀️ วันนี้</h2>
+      <ul id="todayList" class="plain-list today-list"></ul>
+    </section>
+
+    <!-- Upcoming events -->
+    <section class="card" aria-labelledby="eventsTitle">
+      <h2 id="eventsTitle" class="card-title">📅 อีเวนต์ที่จะถึง</h2>
+      <ul id="eventsList" class="plain-list"></ul>
+    </section>
+
+    <!-- Tasks -->
+    <section class="card" aria-labelledby="tasksTitle">
+      <h2 id="tasksTitle" class="card-title">✅ งานที่ต้องทำ</h2>
+      <ul id="tasksList" class="plain-list"></ul>
+    </section>
+
+    <!-- Notes -->
+    <section class="card" aria-labelledby="notesTitle">
+      <h2 id="notesTitle" class="card-title">🗒️ บันทึก</h2>
+      <ul id="notesList" class="plain-list"></ul>
+    </section>
+
+    <!-- Shopping -->
+    <section class="card" aria-labelledby="shoppingTitle">
+      <h2 id="shoppingTitle" class="card-title">🛒 รายการซื้อของ</h2>
+      <ul id="shoppingList" class="plain-list"></ul>
+    </section>
+  </main>
+
+  <footer class="board-footer">
+    <p>Family Board · ข้อมูลเป็นข้อมูลทดลองในเครื่องของคุณ</p>
+  </footer>
+
+  <!-- App logic -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
